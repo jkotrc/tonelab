@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import numpy as np
+from tone import Tone
 
 '''
 A class representing a single period of a tone with some frequency. It allows
 you to divide the tone into segments so that they can be played quickly in succession,
 even if the period of the signal is too large to play for the specified frequency.
 
-Also stores a bitrate variable for determining the bitrate of the sound file
+Also stores a samplerate variable for determining the samplerate of the sound file
 '''
 
 '''
@@ -30,20 +31,16 @@ from a simple array of values.
 "
 '''
 class ToneSplitter:
-    def __init__(self, frequency, bitrate: int=44100): #bitrate = samples in a second
-        self.bitrate = bitrate
-        # 1/f must be divisible by 1/b
-        self.period = 1/frequency
-        self.period -= self.period % (1/bitrate)
-        self.frequency = 1/self.period
-        # Make an x axis going from 0 to the period of the tone.
-        self.tone = np.linspace(0, 1/self.frequency, int(self.bitrate/self.frequency))
-        # Make it a wave by taking the sine of each number in the array
-        # TODO convert to integers
-        self.tone = np.sin(2*np.pi*self.tone*self.frequency)
+    def __init__(self, tone: Tone): #samplerate = samples in a second
+        self.samplerate = tone.get_samplerate()
+        self.frequency = tone.get_frequency()
+        self.period = 1/self.frequency
+        self.tone = tone
+        self.tonedata = tone.evaluate()
         self.subdivide(1)
         self.index=0
 
+    #TODO this has a new meaning now
     def get_tone(self):
         return self.tone
 
@@ -69,20 +66,20 @@ class ToneSplitter:
     and set k.
     '''
     def setperiod(self,period):
-        self.period = period - period % (1/bitrate)
+        self.period = period - period % (1/samplerate)
 
     # TODO make this class an iterator?
     def Next(self):
         segment=[]
-        N = int(self.bitrate/self.frequency)
-        start = int((self.period*self.bitrate*self.index) % N)
-        offset = start + int((self.period*self.bitrate))
-        while offset > len(self.tone):
-            segment.extend(self.tone[start:len(self.tone)])
-            offset -= len(self.tone) - start
+        N = int(self.samplerate/self.frequency)
+        start = int((self.period*self.samplerate*self.index) % N)
+        offset = start + int((self.period*self.samplerate))
+        while offset > len(self.tonedata):
+            segment.extend(self.tonedata[start:len(self.tonedata)])
+            offset -= len(self.tonedata) - start
             start=0
         if offset != 0:
-            segment.extend(self.tone[start:offset])
+            segment.extend(self.tonedata[start:offset])
         self.index+=1
         return np.array(segment)
 
