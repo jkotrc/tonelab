@@ -3,6 +3,7 @@ import pytest
 import tone
 
 frequency = 20
+samplerate = 44100
 
 def sinepluscosine(x: float):
     arg = 2*np.pi*frequency
@@ -15,16 +16,16 @@ class TestTone:
         return a
 
     def test_spacenotnull(self, _tone):
-        assert len(_tone.get_tonespace()) > 0
+        assert len(tone.Tone.get_tonespace(1/frequency,samplerate)) > 0
 
     def test_spacecorrect(self, _tone):
-        space1 = _tone.get_tonespace()
-        space2 = np.linspace(0, 1/frequency, int(np.ceil(44100/frequency)))
+        space1 = tone.Tone.get_tonespace(1/frequency,samplerate)
+        space2 = np.linspace(0, 1/frequency, int(np.ceil(samplerate/frequency)))
         assert (space1 == space2).all()
 
     def test_values(self, _tone):
-        tonespace1=_tone.get_tonespace()
-        tonespace2=np.linspace(0, 1/frequency, int(np.ceil(44100/frequency)))
+        tonespace1=tone.Tone.get_tonespace(1/frequency,samplerate)
+        tonespace2=np.linspace(0, 1/frequency, int(np.ceil(samplerate/frequency)))
         assert (tonespace1 == tonespace2).all()
         vals1 = _tone.evaluate()
         vals2 = np.sin(2*np.pi*frequency*tonespace2)
@@ -32,8 +33,8 @@ class TestTone:
 
     def test_values_different_generator(self):
         _tone = tone.Tone(frequency, sinepluscosine)
-        tonespace1=_tone.get_tonespace()
-        tonespace2=np.linspace(0, 1/frequency, int(np.ceil(44100/frequency)))
+        tonespace1=tone.Tone.get_tonespace(1/frequency,samplerate)
+        tonespace2=np.linspace(0, 1/frequency, int(np.ceil(samplerate/frequency)))
         assert (tonespace1 == tonespace2).all()
         vals1 = _tone.evaluate()
         vals2 = np.sin(2*np.pi*frequency*tonespace2) + np.cos(2*np.pi*frequency*tonespace2)
