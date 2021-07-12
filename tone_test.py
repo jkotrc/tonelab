@@ -5,8 +5,8 @@ import tone
 frequency = 20
 samplerate = 44100
 
-def sinepluscosine(x: float):
-    arg = 2*np.pi*frequency
+def sinepluscosine(x: float, freq: float):
+    arg = 2*np.pi*freq
     return np.sin(arg*x)+np.cos(arg*x)
 
 class TestTone:
@@ -32,7 +32,7 @@ class TestTone:
         assert (vals1 == vals2).all()
 
     def test_values_different_generator(self):
-        _tone = tone.Tone(frequency, sinepluscosine)
+        _tone = tone.Tone(frequency, lambda x: sinepluscosine(x, frequency))
         tonespace1=tone.Tone.get_tonespace(1/frequency,samplerate)
         tonespace2=np.linspace(0, 1/frequency, int(np.ceil(samplerate/frequency)))
         assert (tonespace1 == tonespace2).all()
